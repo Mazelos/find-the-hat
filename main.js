@@ -25,6 +25,11 @@ class Field {
     this.playerPreviousPos = { x: 0, y: 0 };
     this.playerPos = { x: 0, y: 0 };
 
+    this.hatPosition = {
+      x: Math.floor(Math.random() * width),
+      y: Math.floor(Math.random() * height)
+    }
+
     this.borderLimit = { x: width-1, y: height-1 };
   }
 
@@ -100,11 +105,13 @@ class Field {
       }
     }
 
+    this.field[this.hatPosition.y][this.hatPosition.x] = hat;
     this.field[0][0] = playerCharacter;
   }
 
   print() {
     console.clear();
+    console.log('\nFind The Hat ...');
     this.field.forEach(row => {
       console.log(row.join(''));
     });
@@ -116,8 +123,6 @@ class Field {
       console.clear();
       console.log('GAME OVER!!')
     }
-    // this.hatFound && console.log('YOU WIN!!');
-    // this.playerDropped && console.log('GAME OVER!!');
   }
 
   run() {
@@ -127,7 +132,6 @@ class Field {
       this.handlePlayerMovement();
       this.print(); 
     }
-    console.clear();
   }
 }
 
@@ -174,6 +178,7 @@ const getInput = () => {
 const runGame = () => {
   let inputData = getInput();
   const myField = new Field(inputData.height, inputData.width, inputData.difficulty);
+
   myField.generateField();
   myField.print();
   myField.run();
