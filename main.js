@@ -111,10 +111,12 @@ class Field {
 
   print() {
     console.clear();
-    console.log('\nFind The Hat ...');
+    console.log('\nFind The Hat ...\n');
     this.field.forEach(row => {
       console.log(row.join(''));
     });
+    console.log("\nPress 'q' at any time to quit ...")
+    
     if (this.hatFound) {
       console.clear();
       console.log('YOU WIN!!')
@@ -149,8 +151,8 @@ const testGame = () => {
 
 const getInput = () => {
   console.clear();
-  let fieldHeight = prompt(`Height of the field (default ${defaultFieldSize.height}) : `);
-  let fieldWidth = prompt(`Width of the field? (default ${defaultFieldSize.width}) : `);
+  let fieldHeight = prompt(`Height of the field (default ${defaultFieldSize.height}) : `, defaultFieldSize.height);
+  let fieldWidth = prompt(`Width of the field? (default ${defaultFieldSize.width}) : `, defaultFieldSize.width);
   let gameDifficulty = prompt('Difficulty of the game (choose between easy-medium-hard, default medium) : ');
 
   try {
