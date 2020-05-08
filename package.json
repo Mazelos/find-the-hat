@@ -1,0 +1,16 @@
+{
+  "name": "find-your-hat",
+  "version": "1.0.0",
+  "description": "A terminal maze-solving game.",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js",
+    "test": "node test.js"
+  },
+  "author": "maza",
+  "license": "ISC",
+  "dependencies": {
+    "prompt-sync": "^4.2.0",
+    "prompt-sync-history": "^1.0.1"
+  }
+}
