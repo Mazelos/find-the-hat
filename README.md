@@ -2,6 +2,7 @@
 A simple terminal game written in Javascript using NodeJs. 
 The purpose of the game is to find the path to pick the hat without falling in the holes. 
 
+<img src='/files/game.gif'  style="margin: 0 20%;"/>
 
 
 ###  Requirements
