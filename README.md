@@ -1,6 +1,6 @@
 # Find The Hat
 A simple terminal game written in Javascript using NodeJs. 
-The purpose of the game is to find the path to pickup the hat without falling in the holes. 
+The purpose of the game is to find the path to pick up the hat without falling in the holes. 
 
 <img src='/files/game.gif'  style="margin: 0 20%;"/>
 
