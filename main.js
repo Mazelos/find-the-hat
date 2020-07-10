@@ -1,17 +1,17 @@
-// library to make syncronous terminal imput easier .
-// since it's a function we need to call it when required 
-//we also pass the option 'sigint' equalt to true that makes sure that "signal interrupt" ( by default fired with CTRL-C ) will exit the program .
 const prompt = require('prompt-sync')({ sigint: true });
-// requirung event emitter 
-// const EventEmitter = require('events');
+const getInitialConfig = require('./helper/getInitConfig');
+const generateField = require('./helper/generateField');
+const printField = require('./helper/printField');
 
-const hat = '^';
-const hole = 'O';
-const fieldCharacter = '░';
-const playerCharacter = '*';
-const defaultFieldSize = { height: 10, width: 20 }
+const fieldCharacters = {
+  hat: '^',
+  hole: 'O',
+  ground: '░',
+  player: '*'
+}
+const defaultFieldSize = { height: 10, width: 20 };
 
-class Field {
+class Game {
   constructor(height, width, difficulty) {
     this.field = [];
     this.fieldSize = { height: height, width: width };
@@ -33,37 +33,43 @@ class Field {
     this.borderLimit = { x: width-1, y: height-1 };
   }
 
+  handleUserInput() {
+    const inputKey = prompt('» ');
+      // move down 
+    if (inputKey === 'w' && this.playerPos.y > 0) {
+      this.playerPos.y -= 1;
+      // move left 
+    } else if (inputKey === 's' && this.playerPos.y < this.borderLimit.y) {
+      this.playerPos.y += 1;
+      // move up
+    } else if (inputKey === 'a' && this.playerPos.x > 0) {
+      this.playerPos.x -= 1;
+      // move left 
+    } else if (inputKey === 'd' && this.playerPos.x < this.borderLimit.x) {
+      this.playerPos.x += 1;
+      // quit game
+    } else if (inputKey === 'q') {
+      this.handleGameStatus('quit');
+    }
+  } 
+
   handlePlayerMovement() {
     if (this.playerPos.x === this.playerPreviousPos.x && this.playerPos.y === this.playerPreviousPos.y) {
       return;
     }
-    if (this.field[this.playerPos.y][this.playerPos.x] === hat) {
+    if (this.field[this.playerPos.y][this.playerPos.x] === fieldCharacters.hat) {
       this.handleGameStatus('hat');
     }
-    if (this.field[this.playerPos.y][this.playerPos.x] === hole) {
+    if (this.field[this.playerPos.y][this.playerPos.x] === fieldCharacters.hole) {
       this.handleGameStatus('hole');
     }
 
-    this.field[this.playerPos.y][this.playerPos.x] = playerCharacter;
-    this.field[this.playerPreviousPos.y][this.playerPreviousPos.x] = fieldCharacter;
+    this.field[this.playerPos.y][this.playerPos.x] = fieldCharacters.player;
+    this.field[this.playerPreviousPos.y][this.playerPreviousPos.x] = fieldCharacters.ground;
 
     this.playerPreviousPos.x = this.playerPos.x;
     this.playerPreviousPos.y = this.playerPos.y;
-  }
-
-  handleUserInput(direction) {
-    if (direction === 'w' && this.playerPos.y > 0) {
-      this.playerPos.y -= 1;
-    } else if (direction === 's' && this.playerPos.y < this.borderLimit.y) {
-      this.playerPos.y += 1;
-    } else if (direction === 'a' && this.playerPos.x > 0) {
-      this.playerPos.x -= 1; 
-    } else if (direction === 'd' && this.playerPos.x < this.borderLimit.x) {
-      this.playerPos.x += 1;
-    } else if (direction === 'q'){
-      this.handleGameStatus('quit');
-    }
-  }   
+  }  
 
   handleGameStatus(gameStat) {
     if (gameStat === 'hat') {
@@ -77,114 +83,26 @@ class Field {
     }
   }
 
-  getPlayerInput() {
-    let playerMovement = prompt('» ');
-    return playerMovement
-  }
-
-  getRandomHolesPlacement() {
-    const characterToChoose = [fieldCharacter, hole];
-
-    let holesRate;
-    switch (this.difficulty) {
-      case 'easy':
-        holesRate = 0.1;
-      case 'medium':
-        holesRate = 0.15;
-      case 'hard':
-        holesRate = 0.25;
-    }
-    return characterToChoose[Math.floor(Math.random() + holesRate)]
-  }
-
   generateField() {
-    for (let row = 0; row < this.fieldSize.height; row++){
-      this.field[row] = [];
-      for (let column = 0; column < this.fieldSize.width; column++) {
-        this.field[row].push(this.getRandomHolesPlacement());
-      }
-    }
-
-    this.field[this.hatPosition.y][this.hatPosition.x] = hat;
-    this.field[0][0] = playerCharacter;
+    this.field = generateField(this.fieldSize, this.difficulty, this.hatPosition, fieldCharacters);
   }
-
-  print() {
-    console.clear();
-    console.log('\nFind The Hat ...\n');
-    this.field.forEach(row => {
-      console.log(row.join(''));
-    });
-    console.log("\nPress 'q' at any time to quit ...")
-    
-    if (this.hatFound) {
-      console.clear();
-      console.log('YOU WIN!!')
-    }
-    if (this.playerDropped) {
-      console.clear();
-      console.log('GAME OVER!!')
-    }
-  }
-
-  run() {
-    while (this.gameRunning) {
-      let playerMovement = this.getPlayerInput();
-      this.handleUserInput(playerMovement);
-      this.handlePlayerMovement();
-      this.print(); 
-    }
-  }
-}
-
-const testGame = () => {
-  const myField = new Field([
-    ['*', '░', 'O', '░', 'O'],
-    ['░', 'O', '░', '░', '░'],
-    ['░', '░', '^', '░', 'O'],
-    ['O', '░', 'O', '░', '░'],
-  ]);
-  myField.print();
-  myField.run()   
-}
-
-
-const getInput = () => {
-  console.clear();
-  let fieldHeight = prompt(`Height of the field (default ${defaultFieldSize.height}) : `, defaultFieldSize.height);
-  let fieldWidth = prompt(`Width of the field? (default ${defaultFieldSize.width}) : `, defaultFieldSize.width);
-  let gameDifficulty = prompt('Difficulty of the game (choose between easy-medium-hard, default medium) : ');
-
-  try {
-    fieldHeight = Number(fieldHeight);
-  } catch (err) {
-    fieldHeight = defaultFieldSize.height;
-  }
-  try {
-    fieldWidth = Number(fieldWidth);
-  } catch (err) {
-    fieldWidth = defaultFieldSize.width;
-  }
-
-  fieldHeight = fieldHeight <= 30 ? fieldHeight : defaultFieldSize.height;
-  fieldWidth = fieldWidth <= 60 ? fieldWidth : defaultFieldSize.width;
-  gameDifficulty = gameDifficulty === 'easy' || gameDifficulty === 'hard' ? gameDifficulty : 'medium';
-
-  return {
-    height: fieldHeight,
-    width: fieldWidth,
-    difficulty: gameDifficulty
+  printField() {
+    printField(this.field, this.hatFound, this.playerDropped); 
   }
 }
 
 const runGame = () => {
-  let inputData = getInput();
-  const myField = new Field(inputData.height, inputData.width, inputData.difficulty);
+  let initialConfig = getInitialConfig(defaultFieldSize);
+  const newGame = new Game(initialConfig.height, initialConfig.width, initialConfig.difficulty);
 
-  myField.generateField();
-  myField.print();
-  myField.run();
+  newGame.generateField();
+  newGame.printField();
+
+  while (newGame.gameRunning) {
+    newGame.handleUserInput();
+    newGame.handlePlayerMovement();
+    newGame.printField();
+  }
 }
 
 runGame();
-// testGame();
